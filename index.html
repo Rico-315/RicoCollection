@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>和Rico一起玩</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-image: url('images/b.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #f8e9f0;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.4);
+            z-index: -1;
+        }
+
+        .title {
+            font-size: 42px;
+            color: #e899c0;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        /* 固定尺寸 304*380 */
+        .img-container {
+            width: 304px;
+            height: 380px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(232, 153, 192, 0.3);
+            border: 6px solid #ffd6e0;
+            background: white;
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .scroll-track {
+            position: absolute;
+            width: 100%;
+            transition: transform 2.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .scroll-track img {
+            width: 100%;
+            height: 380px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .play-btn {
+            padding: 15px 50px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(45deg, #a8d8ff, #ffb3d9);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 15px rgba(168, 216, 255, 0.4);
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .play-btn:active {
+            transform: translateY(1px);
+        }
+
+        .play-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+    <h1 class="title">和Rico一起玩</h1>
+    
+    <div class="img-container">
+        <div class="scroll-track" id="scrollTrack"></div>
+    </div>
+
+    <button class="play-btn" id="playBtn">玩什么呢？</button>
+
+    <script>
+        const playBtn = document.getElementById('playBtn');
+        const scrollTrack = document.getElementById('scrollTrack');
+        const imgHeight = 380;
+
+        // 11张图片
+        const images = [
+            'images/1.jpg','images/2.jpg','images/3.jpg','images/4.jpg','images/5.jpg',
+            'images/6.jpg','images/7.jpg','images/8.jpg','images/9.jpg','images/10.jpg','images/11.jpg'
+        ];
+
+        // 初始化图片轨道
+        function init() {
+            scrollTrack.innerHTML = '';
+            // 拼接长列表，保证滚动流畅
+            const list = [...images, ...images, ...images];
+            list.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                scrollTrack.appendChild(img);
+            });
+            // 待机随机图
+            const rand = Math.floor(Math.random() * images.length);
+            scrollTrack.style.transform = `translateY(-${rand * imgHeight}px)`;
+        }
+
+        let rolling = false;
+
+        // 点击抽奖
+        playBtn.addEventListener('click', () => {
+            if (rolling) return;
+            rolling = true;
+            playBtn.disabled = true;
+            playBtn.textContent = '抽选中...';
+
+            // 先快速滚动一段距离
+            const extraScroll = images.length * imgHeight * 2;
+            // 最终随机位置
+            const finalIndex = Math.floor(Math.random() * images.length);
+            const finalPos = extraScroll + finalIndex * imgHeight;
+
+            // 🔥 纯CSS动画，绝对不卡
+            scrollTrack.style.transition = 'transform 2.5s cubic-bezier(0.19,1,0.22,1)';
+            scrollTrack.style.transform = `translateY(-${finalPos}px)`;
+
+            // 动画结束重置
+            setTimeout(() => {
+                // 瞬间跳回短列表，视觉无感知
+                scrollTrack.style.transition = 'none';
+                scrollTrack.style.transform = `translateY(-${finalIndex * imgHeight}px)`;
+                
+                rolling = false;
+                playBtn.disabled = false;
+                playBtn.textContent = '玩什么呢？';
+            }, 2800);
+        });
+
+        init();
+    </script>
+</body>
